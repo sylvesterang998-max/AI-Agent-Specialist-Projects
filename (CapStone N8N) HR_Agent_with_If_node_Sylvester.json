@@ -1,0 +1,393 @@
+{
+  "name": "CapStone Project For HR Agent with If node",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1-tG51sJkgpN6dSWVXIS3Th6rTl-fVoeLMuLnDZQk9Ys",
+          "mode": "list",
+          "cachedResultName": "Copy of HR_Analysis",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-tG51sJkgpN6dSWVXIS3Th6rTl-fVoeLMuLnDZQk9Ys/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1-tG51sJkgpN6dSWVXIS3Th6rTl-fVoeLMuLnDZQk9Ys/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $('Application Form').item.json['E-mail'] }}",
+            "Qualification Rate": "={{ $json.output.qualificationRate }}",
+            "Qualification Description": "={{ $json.output.explanation }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Qualification Rate",
+              "displayName": "Qualification Rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Qualification Description",
+              "displayName": "Qualification Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "bb9d7b62-8233-4094-990c-d9f4b78dd415",
+      "name": "Add CV Analysis",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        880,
+        0
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mBeV5OxsAvsnxq5E",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "binaryProperty": "={{ $('Application Form').last().binary.keys()[0] }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mistralAi",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "0779f461-e792-4e88-9775-1ab86fda6e99",
+      "name": "Extract text",
+      "credentials": {
+        "mistralCloudApi": {
+          "id": "ZAfo3i7E7i1CbT8L",
+          "name": "Mistral Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "formTitle": "Submit Your Application ",
+        "formDescription": "Please Fill out the form and upload your CV to apply",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Full Name",
+              "placeholder": "e.g., Jane Doe",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "E-mail",
+              "placeholder": "e.g., user@example.com",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Upload CV",
+              "fieldType": "file",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "74064453-d6b8-4318-b0b1-63e568230060",
+      "name": "Application Form",
+      "webhookId": "40ef694e-99e0-40bf-be87-4fed801c9026"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"qualificationRate\": {\n      \"type\": \"number\",\n      \"description\": \"The qualification score between 0 and 1\"\n    },\n    \"explanation\": {\n      \"type\": \"string\",\n      \"description\": \"Explanation of the candidate evaluation\"\n    }\n  },\n  \"required\": [\n    \"qualificationRate\",\n    \"explanation\"\n  ],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        176
+      ],
+      "id": "bbe06f8e-af91-411e-9be3-361fc9fa37bc",
+      "name": "JSON Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an AI Hiring Assistant, a specialized AI agent designed to evaluate candidate resumes against specific job requirements.\n\nYour task is to analyze the candidate CV text and determine whether the candidate meets the criteria for the role. You must send an email to the applicant {{ $('Application Form').item.json['E-mail'] }}\n\n<Job Role>\nAI Automation Engineer\n\n<Job Requirements>\n\nTechnical Skills\n- Python\n- APIs\n- Automation tools (n8n, Zapier, Make)\n- Prompt engineering\n- LLM integration\n\nIndustry Experience\n- AI Automation\n- Workflow automation\n- SaaS or technology companies\n\nYears of Experience\n- Preferred: 3 to 8 years\n\nEducation\n- Computer Science\n- Data Science\n- Software Engineering\n\nPreferred Skills\n- DevOps\n- AI Agents\n- Vector databases\n- LangChain or RAG systems\n\n<Evaluation Criteria>\n\nEvaluate the candidate based on:\n\n- Relevant technical skills\n- Relevant industry experience\n- Years of experience\n- Education relevance\n- AI / automation project experience\n- Portfolio or GitHub presence\n\n<Scoring Rules>\n\nTechnical skills match: +30  \nIndustry experience: +20  \nYears of experience in range: +15  \nRelevant education: +10  \nAI / automation projects: +15  \nPortfolio / GitHub: +10  \n\nCalculate a qualification score between 0 and 100.\n\n<Result Format>\n\nReturn ONLY valid JSON in the following structure:\n\n{\n  \"qualificationRate\": number,\n  \"explanation\": \"Detailed explanation of the evaluation result\"\n}\n\n<Candidate CV>\n\n{{ $json.text }}\n\nInstructions:\nTools - send a message in Gmail Tools for send mails to the applicant {{ $('Application Form').item.json['E-mail'] }}\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "0b51f664-9fd7-4f81-8e7e-3109e125bcef",
+      "name": "AI Qualification"
+    },
+    {
+      "parameters": {
+        "sendTo": "=angsylvester64@gmail.com",
+        "subject": "=Congrats! Your CV Passed",
+        "message": "=Subject:\nCongrats! Your CV Passed\n\nMessage:\nHello,\n\nYour CV has passed the screening.\n\nScore: {{ $json.qualificationRate }}\n\nWe will contact you soon.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        0
+      ],
+      "id": "5b8ae971-36ad-466e-b1af-0310779d6212",
+      "name": "Send a message",
+      "webhookId": "e0992482-c681-447f-bc5f-b08caa09cea1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PUXuPthSxrR6ENmg",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        368,
+        208
+      ],
+      "id": "e4a7c861-ce96-4998-bbc2-845905e09fd3",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "t0TO9rlPrpEvHNK5",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "55349180-8bb0-49e1-a610-865d1e25136e",
+              "leftValue": "={{ $json.output.qualificationRate }}",
+              "rightValue": 0.6,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        688,
+        0
+      ],
+      "id": "55b4c936-14ea-4bf5-8bed-8435714ee8b2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "=angsylvester64@gmail.com",
+        "subject": "=CV Review Result",
+        "message": "=Subject:\nCV Review Result\n\nMessage:\nHello,\n\nUnfortunately, your CV did not meet our requirements.\n\nScore: {{ $json.qualificationRate }}\n\nThank you for applying.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        176
+      ],
+      "id": "e221df96-2e55-4aa5-8848-d21e01a99e78",
+      "name": "Send a message1",
+      "webhookId": "e0992482-c681-447f-bc5f-b08caa09cea1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "PUXuPthSxrR6ENmg",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Extract text": {
+      "main": [
+        [
+          {
+            "node": "AI Qualification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Application Form": {
+      "main": [
+        [
+          {
+            "node": "Extract text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JSON Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Qualification",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Qualification": {
+      "main": [
+        [
+          {
+            "node": "Add CV Analysis",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add CV Analysis": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Qualification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Add CV Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {
+    "Send a message": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ],
+    "Send a message1": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

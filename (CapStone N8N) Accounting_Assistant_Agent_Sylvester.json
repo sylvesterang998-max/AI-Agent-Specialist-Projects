@@ -1,0 +1,263 @@
+{
+  "name": "Accounting Assistant Agent_N8N",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-bank-statement",
+        "options": {
+          "binaryData": true
+        }
+      },
+      "id": "c9b6d3d7-0e2c-417a-aaaa-c44702cf9f2c",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        96,
+        192
+      ],
+      "webhookId": "a2c33ae7-5adf-463e-a8c9-fbe9bad5c1c7"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "id": "598a9164-1680-45ec-8811-eb131f9df07c",
+      "name": "Extract Text",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        304,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GJRy0ly4CeBe0f7n0iwnoHSwAoFMSEEVA4JOFGDQsqM",
+          "mode": "list",
+          "cachedResultName": "pl_template",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GJRy0ly4CeBe0f7n0iwnoHSwAoFMSEEVA4JOFGDQsqM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1639692181,
+          "mode": "list",
+          "cachedResultName": "Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GJRy0ly4CeBe0f7n0iwnoHSwAoFMSEEVA4JOFGDQsqM/edit#gid=1639692181"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Revenue",
+              "displayName": "Revenue",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cost of Goods Sold",
+              "displayName": "Cost of Goods Sold",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Expenses",
+              "displayName": "Expenses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Profit",
+              "displayName": "Profit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "bd36332d-7564-4259-aee7-9c6a629f5102",
+      "name": "Append Row",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        704,
+        192
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mBeV5OxsAvsnxq5E",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Extract financial data from the following text.\n\nReturn ONLY valid JSON:\n{\n  \"date\": \"YYYY-MM-DD\",\n  \"revenue\": number,\n  \"cost_of_goods_sold\": number,\n  \"expenses\": number,\n  \"profit\": number\n}\n\nIf data is missing, use 0.\n\nInput:\n{{ $json.data }}",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        432,
+        192
+      ],
+      "id": "d285c328-28af-46db-be15-e1843f64736e",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        432,
+        400
+      ],
+      "id": "d3c8ec68-d18d-418d-80ad-5d7c211472ff",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "t0TO9rlPrpEvHNK5",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"date\": \"string\",\n  \"revenue\": \"number\",\n  \"cost_of_goods_sold\": \"number\",\n  \"expenses\": \"number\",\n  \"profit\": \"number\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        384
+      ],
+      "id": "b83623be-cba5-4ea5-83bb-dfe4651a8c55",
+      "name": "Structured Output Parser"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Append Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {
+    "AI Agent": [
+      {
+        "json": {
+          "date": "string",
+          "revenue": "number",
+          "cost_of_goods_sold": "number",
+          "expenses": "number",
+          "profit": "number"
+        }
+      }
+    ]
+  },
+  "triggerCount": 1,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
